@@ -79,7 +79,7 @@ acc_mag = sqrt(x_matrix.^2 + y_matrix.^2 + z_matrix.^2);
 acc_mag = acc_mag - nanmean(acc_mag);
 minPeakHeight = nanstd(acc_mag);
 [pks,locs] = findpeaks(acc_mag,'MINPEAKHEIGHT', minPeakHeight);
-numSteps_mat = numel(pks);
+numSteps_mat = numel(pks)
 figure
 plot(time_matrix, acc_mag, 'blue');
 hold on
@@ -126,6 +126,7 @@ for j=2:length(zero_positions)
         end
     end
 end
+numSteps_zero_x
 figure
 plot(time_matrix, acc_mag, 'blue');
 hold on
@@ -161,14 +162,14 @@ xlabel('Frequency [Hz]');
 ylabel('Power []');
 grid on
 %
-% Construct lowpass filter
+% Construct lowpass filter cut-frequency 8.593Hz
 % where a = T/tau, T = the time between samples, and tau is the filter
 % time constant
 %
-a = 0.004/0.06;
+a = sampling_rate/(1/8.593);
 acc_mag_filt = filter(a, [1 a-1], acc_mag);
 % 
-minPeakHeight_filt = 2.5*nanstd(acc_mag_filt);
+minPeakHeight_filt = nanstd(acc_mag_filt);
 [pks2,locs2] = findpeaks(acc_mag_filt,'MINPEAKHEIGHT', minPeakHeight_filt);
 numSteps_filt = numel(pks2)
 %
