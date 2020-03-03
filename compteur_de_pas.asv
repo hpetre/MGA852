@@ -28,7 +28,7 @@ time_between_samples = [0];
 for i=2:length(time_matrix)
     time_between_samples = [time_between_samples; (time_matrix(i)-time_matrix(i-1))];
 end
-time_between_samples = nanmean(time_between_samples);
+sampling_rate = nanmean(time_between_samples);
 %
 % Plot
 % X
@@ -78,7 +78,7 @@ hold off
 % Calculate average interval peak-to-peak
 % discard points where acceleration is lowest
 %
-p2p_temp = locs*time_between_samples;
+p2p_temp = locs*sampling_rate;
 for k=2:length(p2p_temp)
     p2p_diff = p2p_temp(k) - p2p_temp(k-1);
 end
@@ -147,6 +147,10 @@ P2 = abs(freq_spectrum/L);
 P1 = P2(1:L/2+1);
 P1(2:end-1) = 2*P1(2:end-1);
 %
+signal_avg=0;
+for i=1:length(P1)
+    signal_avg = signal_avg+f(i)*P1(i);
+end
 figure 
 plot(f, P1);
 title('Power Vs Frequency')
@@ -154,11 +158,11 @@ xlabel('Frequency [Hz]');
 ylabel('Power []');
 grid on
 %
-% Construct lowpass filter cut-frequency 11Hz
+% Construct lowpass filter cut-frequency 8.593Hz
 % where a = T/tau, T = the time between samples, and tau is the filter
 % time constant
 %
-a = time_between_samples/(1/5);
+a = sampling_rate/(1/200);
 acc_mag_filt = filter(a, [1 a-1], acc_mag);
 % 
 minPeakHeight_filt = nanstd(acc_mag_filt);
