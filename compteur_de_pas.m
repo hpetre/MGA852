@@ -12,15 +12,30 @@
 % 7 - Detect number of steps by zero-crossing
 % 8 - Detect number of steps by filtering data
 %
-% Read csv file and create 
+% read csv file and create 
 % time, x, y, z matrices
 clear all
 close all
-[num, txt, raw] = xlsread('LAB2_Part1_testdata1_mod.csv');
-time_matrix     = (num(2:end, 1));
-x_matrix        = (num(2:end, 2));
-y_matrix        = (num(2:end, 3));
-z_matrix        = (num(2:end, 4));
+[num, txt, raw] = xlsread('LAB2_Part1_testdata1.csv');
+time_matrix     = str2double(txt(2:end, 1));
+x_matrix        = str2double(txt(2:end, 2));
+y_matrix        = str2double(txt(2:end, 3));
+z_matrix        = str2double(txt(2:end, 4));
+
+% there are NaN values
+% interpolate them and set them
+% to a number
+x_matrix_nan = ~isnan(x_matrix);
+x_temp = cumsum(x_matrix_nan'-diff([1,x_matrix_nan'])/2);
+x_matrix = interp1(1:nnz(x_matrix_nan'),x_matrix(x_matrix_nan'),x_temp)';
+
+y_matrix_nan = ~isnan(y_matrix);
+y_temp = cumsum(y_matrix_nan'-diff([1,y_matrix_nan'])/2);
+y_matrix = interp1(1:nnz(y_matrix_nan'),y_matrix(y_matrix_nan'),y_temp)';
+
+z_matrix_nan = ~isnan(z_matrix);
+z_temp = cumsum(z_matrix_nan'-diff([1,z_matrix_nan'])/2);
+z_matrix = interp1(1:nnz(z_matrix_nan'),z_matrix(z_matrix_nan'),z_temp)';
 %
 % Detect sampling rate
 %
@@ -87,24 +102,27 @@ p2p_avg = nanmean(p2p_diff);
 % Count number of Steps
 % Zero-Crossing method
 %
-peak_to_zero_interval = 0.02;
-len_peak_to_zero = fix(peak_to_zero_interval/sampling_rate);
+% get a list of all zero-crossings
+% check if a peak is found between 2 zero-crossings
+%
+zero_crossing = [0];
 numSteps_zero_x = 0;
+zero_positions = [1];
 locs_z_x = [1];
 pks_z_x = [0];
-for i=2:length(acc_mag)
+for i=(2):length(acc_mag)
     zero_crossing = acc_mag(i) * acc_mag(i-1) < 0;
-    % if a zero-crossing is detected
-    % check if there is a peak within len_peak_to_zero 
-    % from it
     if zero_crossing 
-        for j=1:length(locs)
-            if ((locs(j) >= (i-len_peak_to_zero) && (locs(j) <= (i))))
-                pks_z_x = [pks_z_x; acc_mag(i-len_peak_to_zero)];
-                locs_z_x = [locs_z_x; (i-len_peak_to_zero)];
-                numSteps_zero_x = numSteps_zero_x + 1;
-                break;
-            end
+       zero_positions = [zero_positions; (i)];
+    end
+end
+for j=2:length(zero_positions)
+    for k=1:length(locs)
+        if (locs(k) >= zero_positions(j-1)) && (locs(k) <= zero_positions(j))
+            pks_z_x = [pks_z_x; pks(k)];
+            locs_z_x = [locs_z_x; locs(k)];
+            numSteps_zero_x = numSteps_zero_x + 1;
+            break;
         end
     end
 end
