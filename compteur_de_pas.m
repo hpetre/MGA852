@@ -16,7 +16,8 @@
 % time, x, y, z matrices
 clear all
 close all
-[num, txt, raw] = xlsread('LAB2_Part1_testdata1.csv');
+% [num, txt, raw] = xlsread('LAB2_Part1_testdata1.csv');
+[num, txt, raw] = xlsread('LAB2_Part1_testdata2_mod.csv');
 time_matrix     = str2double(txt(2:end, 1));
 x_matrix        = str2double(txt(2:end, 2));
 y_matrix        = str2double(txt(2:end, 3));
@@ -99,6 +100,7 @@ for k=2:length(p2p_temp)
 end
 p2p_avg = nanmean(p2p_diff);
 %
+%
 % Count number of Steps
 % Zero-Crossing method
 %
@@ -112,13 +114,20 @@ locs_z_x = [1];
 pks_z_x = [0];
 for i=(2):length(acc_mag)
     zero_crossing = acc_mag(i) * acc_mag(i-1) < 0;
-    if zero_crossing 
+    if zero_crossing
        zero_positions = [zero_positions; (i)];
     end
 end
+% find average distance between zeros
+time_between_zeros = [0];
+for i=2:length(zero_positions)
+    time_between_zeros = [time_between_zeros; (zero_positions(i)-zero_positions(i-1))];
+end
+mean_time_between_zeros = nanmean(time_between_zeros);
 for j=2:length(zero_positions)
     for k=1:length(locs)
-        if (locs(k) >= zero_positions(j-1)) && (locs(k) <= zero_positions(j))
+        if (locs(k) >= zero_positions(j-1)) && (locs(k) <= zero_positions(j)) && ...
+           (zero_positions(j)-zero_positions(j-1)) > mean_time_between_zeros
             pks_z_x = [pks_z_x; pks(k)];
             locs_z_x = [locs_z_x; locs(k)];
             numSteps_zero_x = numSteps_zero_x + 1;
